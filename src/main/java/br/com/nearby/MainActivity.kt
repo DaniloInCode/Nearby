@@ -1,15 +1,23 @@
 package br.com.nearby
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
+import br.com.nearby.data.model.Market
+import br.com.nearby.ui.screen.HomeScreen
+import br.com.nearby.ui.screen.MarketDetailsScreen
+import br.com.nearby.ui.screen.SplashScreen
+import br.com.nearby.ui.screen.WelcomeScreen
+import br.com.nearby.ui.screen.route.Home
+import br.com.nearby.ui.screen.route.Splash
+import br.com.nearby.ui.screen.route.Welcome
 import br.com.nearby.ui.theme.NearbyTheme
 
 class MainActivity : ComponentActivity() {
@@ -18,29 +26,35 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             NearbyTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                val navController = rememberNavController()
+                NavHost(
+                    navController = navController,
+                    startDestination = Splash
+                ) {
+                    composable<Splash> {
+                        SplashScreen(modifier = Modifier.fillMaxSize(),
+                            onNavigateToWelCome = {
+                                navController.navigate(Welcome)
+                            }
+                        )
+                    }
+                    composable<Welcome> {
+                        WelcomeScreen(onNavigationToHome = { navController.navigate(Home) })
+                    }
+                    composable<Home> {
+                        HomeScreen(onNavigateToMarketDetails = { selectedMarket ->
+                            navController.navigate(selectedMarket)
+                        })
+                    }
+                    composable<Market> {
+                        val selectedMarket = it.toRoute<Market>()
+                        MarketDetailsScreen(market = selectedMarket, onNavigateBack = {
+                            navController.popBackStack()
+                        })
+                    }
                 }
             }
         }
     }
 }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    NearbyTheme {
-        Greeting("Android")
-    }
-}
